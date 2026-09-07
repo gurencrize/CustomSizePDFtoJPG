@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Iterator, Sequence
 
@@ -45,7 +45,6 @@ class ConvertOptions:
     quality: int = 90
     pages: Sequence[int] | None = None
     grayscale: bool = False
-    alias: str = field(default="", repr=False)
 
     def __post_init__(self) -> None:
         for name in ("width", "height"):

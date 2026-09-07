@@ -19,6 +19,9 @@ dev = ["pytest>=7.0"]
 [project.scripts]
 pdf2jpg = "pdf2jpg.cli:main"
 
+[project.gui-scripts]
+pdf2jpg-gui = "pdf2jpg.gui:main"
+
 [tool.setuptools.packages.find]
 include = ["pdf2jpg*"]
 

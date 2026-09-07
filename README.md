@@ -1,11 +1,12 @@
 # CustomSizePDFtoJPG
 
-PDF のページを **任意のサイズ**の JPG 画像に変換するツール（CLI + Python ライブラリ）。
+PDF のページを **任意のサイズ**の JPG 画像に変換するツール（GUI + CLI + Python ライブラリ）。
 
 - 幅・高さをピクセル単位で指定（片方だけの指定ならアスペクト比を維持）
 - `--dpi` / `--scale` によるサイズ指定にも対応
 - 縦横比が合わないときの処理を `contain` / `cover` / `stretch` から選択
 - ページ範囲指定、JPEG 品質、グレースケール出力、複数 PDF の一括変換
+- tkinter 製の GUI（進捗表示・中断つき）
 
 ## インストール
 
@@ -14,6 +15,25 @@ pip install -e .
 # 依存だけ入れる場合
 pip install -r requirements.txt
 ```
+
+## 使い方（GUI）
+
+```bash
+pdf2jpg-gui           # インストール済みの場合
+python -m pdf2jpg --gui   # リポジトリ内から直接
+python -m pdf2jpg --gui doc.pdf   # 最初から一覧に追加した状態で起動
+```
+
+標準ライブラリの tkinter を使います。入っていない場合は OS のパッケージを入れてください
+（例: Debian/Ubuntu なら `sudo apt install python3-tk`、macOS の Homebrew なら `brew install python-tk`）。
+
+GUI でできること:
+
+- PDF を複数追加して一括変換（追加 / 削除 / すべて消去）
+- 出力先フォルダの選択
+- サイズの決め方を「ピクセル指定 / 解像度 (dpi) / 倍率」から選択（選んだ欄以外は自動で無効化）
+- 合わせ方（収める・切り抜く・引き伸ばす）、余白色（カラーピッカー付き）、ページ指定、品質、グレースケール
+- 変換は別スレッドで実行するので画面が固まらず、進捗バー・ログ表示・中断ボタンが使える
 
 ## 使い方（CLI）
 
@@ -84,6 +104,15 @@ for path in iter_convert_pdf("doc.pdf", "output", ConvertOptions(dpi=300)):
     print("生成:", path)
 ```
 
+## 構成
+
+| ファイル | 役割 |
+| --- | --- |
+| `pdf2jpg/converter.py` | 変換のコア処理 |
+| `pdf2jpg/cli.py` | コマンドライン |
+| `pdf2jpg/form.py` | GUI 入力（文字列）の検証とオプション生成。tkinter に非依存 |
+| `pdf2jpg/gui.py` | tkinter の画面と変換ワーカー |
+
 ## 実装メモ
 
 - レンダリングは PyMuPDF、リサイズと JPEG 書き出しは Pillow（LANCZOS）。
@@ -91,10 +120,18 @@ for path in iter_convert_pdf("doc.pdf", "output", ConvertOptions(dpi=300)):
   ぼやけが起きにくくなっています。
 - 1 ページあたりのピクセル数は 1 億で頭打ちにして、メモリ使用量を抑えています。
 - パスワード保護された PDF、存在しないページなどは `ConversionError` を送出します。
+- GUI の入力検証は `pdf2jpg/form.py` に切り出してあるため、tkinter が無い環境でもテストできます。
 
 ## テスト
 
 ```bash
 pip install -e ".[dev]"
 pytest
+```
+
+`tests/test_gui.py` は tkinter が無い環境では自動でスキップされます。
+ディスプレイの無い環境で GUI ごとテストする場合は仮想ディスプレイを使ってください。
+
+```bash
+xvfb-run -a pytest
 ```
