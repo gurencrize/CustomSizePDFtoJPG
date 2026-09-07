@@ -1,0 +1,1 @@
+python -m pdf2jpg --gui
